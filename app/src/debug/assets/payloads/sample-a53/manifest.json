@@ -1,0 +1,13 @@
+{
+  "profileId": "sample-a53",
+  "displayName": "Samsung A536B (debug sample)",
+  "models": ["SM-A536B", "SM-A536B/DS", "SM-A536B2", "SM-A536E"],
+  "kernelVersions": ["5.4.0", "5.4.110", "5.4.117", "5.4.119", "5.4.141"],
+  "files": [
+    "cve-2026-43499-app.so",
+    "ksud-s25u-kdp",
+    "sample-boot-ramdisk.img",
+    "sample-userdata.txt"
+  ],
+  "notes": "Local-only debug payload bundle used to exercise the A536B import flow without downloading remote assets."
+}

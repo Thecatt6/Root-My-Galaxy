@@ -1,0 +1,1 @@
+This file models a local debug payload bundle for the A536B test profile.

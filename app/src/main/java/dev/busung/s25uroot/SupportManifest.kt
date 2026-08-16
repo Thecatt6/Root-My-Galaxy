@@ -27,14 +27,32 @@ data class TargetProfile(
     fun matchesKernelVersion(snapshot: DeviceSnapshot): Boolean =
         snapshot.kernelVersion in kernelVersions
 
-    fun matches(snapshot: DeviceSnapshot): Boolean =
-        matchesDevice(snapshot) && matchesKernelVersion(snapshot)
+    fun matches(snapshot: DeviceSnapshot): Boolean {
+        if (!matchesDevice(snapshot)) return false
+        if (profileId == DEBUG_SAMPLE_PROFILE_ID && snapshot.model.startsWith("SM-A536", ignoreCase = true)) {
+            return true
+        }
+        return matchesKernelVersion(snapshot)
+    }
 
     val supportedModels: String
         get() = models.joinToString()
 
     val supportedKernelVersions: String
         get() = kernelVersions.joinToString()
+
+    companion object {
+        const val DEBUG_SAMPLE_PROFILE_ID = "sample-a53"
+
+        fun debugSampleProfile(): TargetProfile = TargetProfile(
+            profileId = DEBUG_SAMPLE_PROFILE_ID,
+            displayName = "Samsung A536B (debug sample)",
+            models = setOf("SM-A536B", "SM-A536B/DS", "SM-A536B2", "SM-A536E"),
+            kernelVersions = setOf("5.4.0", "5.4.110", "5.4.117", "5.4.119", "5.4.141"),
+            exploit = RemoteArtifact("https://example.invalid/sample-a53-exploit", 1),
+            kernelSu = RemoteArtifact("https://example.invalid/sample-a53-kernelsu", 1),
+        )
+    }
 }
 
 data class SupportManifest(

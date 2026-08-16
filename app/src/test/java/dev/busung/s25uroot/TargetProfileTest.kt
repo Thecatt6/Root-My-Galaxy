@@ -26,6 +26,14 @@ class TargetProfileTest {
         assertFalse(profile.matches(snapshot("SM-S938N", "6.6.102-android15-8-build")))
     }
 
+    @Test
+    fun debugSampleA53MatchesSamsungA536BOnly() {
+        val debugProfile = TargetProfile.debugSampleProfile()
+        assertTrue(debugProfile.matches(snapshot("SM-A536B", "5.4.110-android14-8-build-a")))
+        assertTrue(debugProfile.matches(snapshot("SM-A536B/DS", "5.4.117-android14-8-build-b")))
+        assertFalse(debugProfile.matches(snapshot("SM-A536A", "5.4.110-android14-8-build-a")))
+    }
+
     private fun snapshot(
         model: String,
         kernelRelease: String,
@@ -34,6 +42,8 @@ class TargetProfileTest {
         model = model,
         device = "unused",
         kernelRelease = kernelRelease,
+        kernelVersionInfo = "#1 SMP PREEMPT",
+        machine = "armv8",
         buildId = "BP4A.251205.006.S938BCZG1",
         fingerprint = "samsung/example",
         androidRelease = "16",
