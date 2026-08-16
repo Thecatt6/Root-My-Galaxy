@@ -1,0 +1,9 @@
+{
+  "profileId": "sample-a53",
+  "displayName": "Samsung A53 (Sample)",
+  "model": "SM-A536B",
+  "kernelVersion": "6.6.98",
+  "exploit": "cve-2026-43499-app.so",
+  "kernelSu": "ksud-s25u-kdp",
+  "notes": "This is a sample payload for manual import testing. Files are placeholders and not harmful."
+}
