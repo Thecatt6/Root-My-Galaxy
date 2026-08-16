@@ -17,6 +17,19 @@ data class VerifiedPayloads(
 
 class PayloadRepository(private val context: Context) {
     fun loadTargets(): List<TargetProfile> {
+        val remoteTargets = runCatching { fetchRemoteTargets() }.getOrDefault(emptyList())
+        val targets = if (BuildConfig.DEBUG) {
+            buildList {
+                addAll(remoteTargets)
+                add(TargetProfile.debugSampleProfile())
+            }
+        } else {
+            remoteTargets
+        }
+        return targets.distinctBy { it.profileId }
+    }
+
+    private fun fetchRemoteTargets(): List<TargetProfile> {
         val commit = resolveMainCommit()
         val manifestBytes = downloadBytes(rawUrl(commit, "support/targets-v3.json"), MAX_MANIFEST_BYTES)
         return SupportManifest.parse(manifestBytes).targets.map { profile -> profile.copy(
@@ -34,6 +47,9 @@ class PayloadRepository(private val context: Context) {
         ?: error(context.getString(R.string.repo_profile_missing, profileId))
 
     fun download(profile: TargetProfile, onProgress: (String) -> Unit): VerifiedPayloads {
+        if (BuildConfig.DEBUG && profile.profileId == TargetProfile.DEBUG_SAMPLE_PROFILE_ID) {
+            return copyDebugSamplePayload(profile, onProgress)
+        }
         val directory = File(context.filesDir, "payloads/${profile.profileId}").apply { mkdirs() }
         val exploit = downloadArtifact(
             profile.exploit,
@@ -49,6 +65,34 @@ class PayloadRepository(private val context: Context) {
         )
         Os.chmod(exploit.absolutePath, 0b100100100)
         Os.chmod(kernelSu.absolutePath, 0b100100100)
+        return VerifiedPayloads(profile, exploit, kernelSu)
+    }
+
+    private fun copyDebugSamplePayload(
+        profile: TargetProfile,
+        onProgress: (String) -> Unit,
+    ): VerifiedPayloads {
+        val directory = File(context.filesDir, "payloads/${profile.profileId}").apply { mkdirs() }
+        val assetRoot = "payloads/${profile.profileId}"
+        val assetEntries = context.assets.list(assetRoot) ?: emptyArray()
+        require(assetEntries.isNotEmpty()) { "Missing debug payload bundle: $assetRoot" }
+        for (assetName in assetEntries) {
+            val source = context.assets.open("$assetRoot/$assetName")
+            val target = File(directory, assetName)
+            source.use { input ->
+                FileOutputStream(target).use { output ->
+                    input.copyTo(output)
+                }
+            }
+        }
+        val exploit = File(directory, "cve-2026-43499-app.so")
+        val kernelSu = File(directory, "ksud-s25u-kdp")
+        require(exploit.exists() && kernelSu.exists()) {
+            "Debug payload bundle is incomplete: ${directory.absolutePath}"
+        }
+        Os.chmod(exploit.absolutePath, 0b100100100)
+        Os.chmod(kernelSu.absolutePath, 0b100100100)
+        onProgress(context.getString(R.string.repo_verified, "debug sample"))
         return VerifiedPayloads(profile, exploit, kernelSu)
     }
 
