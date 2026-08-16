@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.busung.s25uroot">
+
+    <application>
+        <activity android:name="dev.busung.s25uroot.LocalPayloadImporterActivity"
+            android:exported="true"
+            android:label="Local Payload Importer" />
+    </application>
+</manifest>

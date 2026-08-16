@@ -1,0 +1,33 @@
+name: Build Android Debug APK
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK/NDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-levels: 33,37
+          ndk: '25.2.9519653'
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
